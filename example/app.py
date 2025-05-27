@@ -1,16 +1,25 @@
 from flask import Flask, Response
 from prometheus_client import Counter, Histogram, generate_latest
+import random
+import time
 
 app = Flask(__name__)
 
-REQUEST_COUNT = Counter("http_requests_total", "Total HTTP requests")
-REQUEST_LATENCY = Histogram("http_request_duration_seconds", "Request latency")
+REQUEST_COUNT = Counter("http_requests_total", "Total HTTP requests", ["method", "endpoint", "status"])
+REQUEST_LATENCY = Histogram(
+    "http_request_duration_seconds",
+    "Request latency",
+    buckets=[0.005, 0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.5, 1, 2.5, 5, 10]
+)
 
 @app.route("/")
 @REQUEST_LATENCY.time()
 def homepage():
-    REQUEST_COUNT.inc()
-    return "Hello, SRE World!"
+    status_code = 200
+    if random.random() < 0.3: # 30% of the time
+        time.sleep(0.5) # Delay for 500ms
+    REQUEST_COUNT.labels(method="GET", endpoint="/", status=str(status_code)).inc()
+    return "Hello, SRE World!", status_code
 
 @app.route("/metrics")
 def metrics():

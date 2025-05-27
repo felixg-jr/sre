@@ -21,3 +21,7 @@ Think of it like:
 	•	It’s perfect for mocking up a web service to simulate traffic, latency, or expose metrics.
 	•	It makes it easy to integrate Prometheus metrics using the prometheus_client library.
 	•	You can write a working app in just 10 lines of Python.
+
+Open a terminal and run this to simulate high-frequency requests:
+while true; do curl -s http://localhost:8000 > /dev/null; done
+Let it run for 10–20 seconds to generate steady traffic into Prometheus' recent [1m] window.
